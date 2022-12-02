@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const formAnswers = document.querySelector('#formAnswers');
   const nextButton = document.querySelector('#next');
   const prevButton = document.querySelector('#prev');
+  const sendButton = document.querySelector('#send');
 
   const questions = [
     {
@@ -95,12 +96,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // функция запуска тестирования
   const playTest = () => {
+    const finalAnswers = [];
     let numberQuestion = 0;
+
     const renderAnswers = (index) => {
       questions[index].answers.forEach((answer) => {
         const answerItem = document.createElement('div');
 
-        answerItem.classList.add('answers-item', 'd-flex', 'flex-column');
+        answerItem.classList.add(
+          'answers-item',
+          'd-flex',
+          'justify-content-center'
+        );
         answerItem.innerHTML = `
           <input type="${questions[index].type}" id="${answer.title}" name="answer" class="d-none">
           <label for="${answer.title}" class="d-flex flex-column justify-content-between">
@@ -115,28 +122,68 @@ document.addEventListener('DOMContentLoaded', function () {
     const renderQuestions = (indexQuestion) => {
       formAnswers.innerHTML = '';
 
-      if (numberQuestion >= 0 && numberQuestion <= questions.length - 1) {
-        questionTitle.textContent = `${questions[indexQuestion].question}`;
-        renderAnswers(indexQuestion);
-        nextButton.classList.remove('d-none');
-        prevButton.classList.remove('d-none');
-      }
-      if (numberQuestion === 0) {
-        prevButton.classList.add('d-none');
-      }
+      switch (true) {
+        case numberQuestion >= 0 && numberQuestion <= questions.length - 1:
+          questionTitle.textContent = `${questions[indexQuestion].question}`;
+          renderAnswers(indexQuestion);
+          nextButton.classList.remove('d-none');
+          prevButton.classList.remove('d-none');
+          sendButton.classList.add('d-none');
+          break;
+        case numberQuestion === 0:
+          prevButton.classList.add('d-none');
+          break;
+        case numberQuestion === questions.length:
+          nextButton.classList.add('d-none');
+          prevButton.classList.add('d-none');
+          sendButton.classList.remove('d-none');
 
-      if (numberQuestion === questions.length - 1) {
-        nextButton.classList.add('d-none');
+          formAnswers.innerHTML = `
+          <div class="form-group">
+            <label for="numberPhone">Enter your number</label>
+            <input type="phone" class="form-control" id="numberPhone"> 
+          </div>`;
+          break;
+        default:
+          formAnswers.textContent = 'Cnaсибо за пройденный тест!';
+          setTimeout(() => {
+            modalBlock.classList.remove('d-block');
+          }, 2000);
+          break;
       }
     };
     renderQuestions(numberQuestion);
+
+    const checkAnswer = () => {
+      const obj = {};
+      const inputs = [...formAnswers.elements].filter(
+        (input) => input.checked || input.id === 'numberPhone'
+      );
+
+      inputs.forEach((input, index) => {
+        if (numberQuestion >= 0 && numberQuestion <= questions.length - 1) {
+          obj[`${index}_${questions[numberQuestion].question}`] = input.value;
+        }
+        if (numberQuestion === questions.length) {
+          obj[`Hомер телефонa`] = input.value;
+        }
+      });
+      finalAnswers.push(obj);
+    };
     nextButton.onclick = () => {
+      checkAnswer();
       numberQuestion++;
       renderQuestions(numberQuestion);
     };
     prevButton.onclick = () => {
       numberQuestion--;
       renderQuestions(numberQuestion);
+    };
+    sendButton.onclick = () => {
+      checkAnswer();
+      numberQuestion++;
+      renderQuestions(numberQuestion);
+      console.log(finalAnswers);
     };
   };
 });

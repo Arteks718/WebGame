@@ -85,8 +85,6 @@ const getData = () => {
     }, 2000);
 }
 
-const obj = {};
-
 const inputs = [...formAnswers.elements]
     .filter(elem => elem.checked)
 
